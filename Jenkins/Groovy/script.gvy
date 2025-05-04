@@ -9,11 +9,18 @@ node {
             echo "Listing current directory to verify file presence..."
             ls -l
 
+            echo "Showing full paths of files to be copied:"
+            for file in Deployment.yaml Service.yaml Dockerfile; do
+                echo "File: $file"
+                ls -l $file
+            done
+
             echo "Copying files to Ansible VM..."
-            scp -o StrictHostKeyChecking=no Deployment.yaml Service.yaml Dockerfile puranmishra2024@34.72.208.46:/home/puranmishra2024/
+            scp -v -o StrictHostKeyChecking=no Deployment.yaml Service.yaml Dockerfile puranmishra2024@34.72.208.46:/home/puranmishra2024/
         '''
     }
 }
+
 
 
 
