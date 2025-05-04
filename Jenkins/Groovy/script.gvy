@@ -1,7 +1,8 @@
 node {
     stage('Git Checkout') {
         deleteDir()
-        git url: 'https://github.com/Puranmishra09/Deployment-on-K8s-cluster-using-jenkins-CI-CD.git'
+        git branch: 'main', url: 'https://github.com/Puranmishra09/Deployment-on-K8s-cluster-using-jenkins-CI-CD.git'
+
     }
 
     stage('Send Files to Ansible VM') {
