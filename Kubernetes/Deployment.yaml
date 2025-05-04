@@ -1,20 +1,23 @@
-kind: Deployment
 apiVersion: apps/v1
+kind: Deployment
 metadata:
-   name: webapp-deployment
+  name: k8s-deployment
+  labels:
+    app: k8s-deployment
 spec:
-   replicas: 3
-   selector:     
-      matchLabels:
-         app: webapp-deployment
-   template:
-      metadata:
-         labels:
-            app: webapp-deployment
-      spec:
-         containers:
-            - name: webapp-deployment
-              image: mynameismohan/jenkins-pipeline
-              imagePullPolicy: Always
-              ports:
-               - containerPort: 80
+  replicas: 2
+  selector:
+    matchLabels:
+      app: k8s-deployment
+  template:
+    metadata:
+      labels:
+        app: k8s-deployment
+    spec:
+      containers:
+      - name: k8s-deployment
+        image: puranmishra/k8s-deployment:latest
+        ports:
+        - containerPort: 3000
+
+

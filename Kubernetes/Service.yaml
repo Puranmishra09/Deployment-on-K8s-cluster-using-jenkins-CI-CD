@@ -1,14 +1,13 @@
-kind: Service                             
 apiVersion: v1
+kind: Service
 metadata:
-  name: webapp-deployment
-  labels:
-    app: webapp-deployment
+  name: k8s-deployment-service
 spec:
-  ports:
-    - port: 8080                               
-      targetPort: 80
-      nodePort: 32145
   selector:
-    app: webapp-deployment                    
-  type: LoadBalancer                   
+    app: k8s-deployment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+
