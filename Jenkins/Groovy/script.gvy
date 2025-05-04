@@ -46,7 +46,7 @@ stage('Send Files to Ansible VM') {
                     docker tag $JOB_NAME:v1.$BUILD_ID puranmishra/$JOB_NAME:latest
                 '
             '''
-        }'
+        }
     }
 
     stage('Push Image to Docker Hub') {
