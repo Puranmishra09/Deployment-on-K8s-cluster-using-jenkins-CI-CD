@@ -1,6 +1,5 @@
 node {
    stage('Git Checkout') {
-    steps {
         deleteDir()
         git url: 'https://github.com/Puranmishra09/Deployment-on-K8s-cluster-using-jenkins-CI-CD.git'
     }
