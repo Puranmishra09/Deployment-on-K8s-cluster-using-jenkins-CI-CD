@@ -1,12 +1,11 @@
 node {
-    
-    stage('Git Checkout') {
+   stage('Git Checkout') {
     steps {
         deleteDir()
         git url: 'https://github.com/Puranmishra09/Deployment-on-K8s-cluster-using-jenkins-CI-CD.git'
     }
 }
-    stage('Send Files to Ansible VM') {
+stage('Send Files to Ansible VM') {
     sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
         sh '''
             echo "Listing current directory to verify file presence..."
