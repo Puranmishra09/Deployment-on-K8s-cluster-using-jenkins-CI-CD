@@ -10,13 +10,6 @@ stage('Send Files to Ansible VM') {
             echo "Working directory: $(pwd)"
             echo "Listing contents:"
             ls -R
-
-            # If needed, cd into the repo folder (e.g., if it's inside a subfolder)
-            cd k8s-deployment || exit 1
-
-            echo "After cd:"
-            ls -R
-
             scp -o StrictHostKeyChecking=no \
                 Kubernetes/Deployment.yaml \
                 Kubernetes/Service.yaml \
