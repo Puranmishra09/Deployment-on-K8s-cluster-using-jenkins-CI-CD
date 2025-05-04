@@ -46,18 +46,19 @@ node {
     }
 
     stage('Push Image to Docker Hub') {
-        sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
-            withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
-                sh """
-                    ssh -o StrictHostKeyChecking=no puranmishra2024@34.72.208.46 '
-                        echo "$DOCKER_PASS" | docker login -u puranmishra --password-stdin &&
-                        docker push puranmishra/${JOB_NAME}:v1.${BUILD_ID} &&
-                        docker push puranmishra/${JOB_NAME}:latest
-                    '
-                """
-            }
+    sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-pass', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            sh """
+                ssh -o StrictHostKeyChecking=no puranmishra2024@34.72.208.46 '
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin &&
+                    docker push puranmishra/${JOB_NAME}:v1.${BUILD_ID} &&
+                    docker push puranmishra/${JOB_NAME}:latest
+                '
+            """
         }
     }
+}
+
 
     stage('Copy K8s Files to GKE Node (optional)') {
         sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
