@@ -7,10 +7,20 @@ node {
 stage('Send Files to Ansible VM') {
     sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
         sh '''
+            echo "Working directory: $(pwd)"
+            echo "Listing contents:"
+            ls -R
+
+            # If needed, cd into the repo folder (e.g., if it's inside a subfolder)
+            cd k8s-deployment || exit 1
+
+            echo "After cd:"
+            ls -R
+
             scp -o StrictHostKeyChecking=no \
-                "Kubernetes/Deployment.yaml" \
-                "Kubernetes/Service.yaml" \
-                "Kubernetes/Dockerfile" \
+                Kubernetes/Deployment.yaml \
+                Kubernetes/Service.yaml \
+                Kubernetes/Dockerfile \
                 puranmishra2024@34.72.208.46:/home/puranmishra2024/
         '''
     }
@@ -18,7 +28,7 @@ stage('Send Files to Ansible VM') {
 
 
     stage('Build Docker Image on Ansible VM') {
-        sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
+        sshagent([89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
             sh '''
                 ssh -o StrictHostKeyChecking=no puranmishra2024@34.72.208.46 '
                     cd /home/puranmishra2024 &&
@@ -36,7 +46,7 @@ stage('Send Files to Ansible VM') {
                     docker tag $JOB_NAME:v1.$BUILD_ID puranmishra/$JOB_NAME:latest
                 '
             '''
-        }
+        }'
     }
 
     stage('Push Image to Docker Hub') {
