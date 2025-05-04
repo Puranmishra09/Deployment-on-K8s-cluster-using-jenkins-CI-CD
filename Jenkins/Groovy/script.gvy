@@ -5,7 +5,7 @@ node {
     }
 
     stage('Send Files to Ansible VM') {
-    sshagent(['ansible']) {
+    sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
         sh '''
         scp -o StrictHostKeyChecking=no \
             "Kubernetes/Deployment.yaml" \
