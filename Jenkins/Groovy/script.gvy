@@ -1,68 +1,68 @@
 node {
     
-    stage ('Git checkout'){
-         
-        git 'https://github.com/Krishnamohan-Yerrabilli/jenkins-pipeline.git'
+    stage('Git Checkout') {
+        git 'https://github.com/Puranmishra09/Deployment-on-K8s-cluster-using-jenkins-CI-CD.git'
     }
-    
-    stage ('sending dockerfile to the ansible server over ssh by jenkins'){
-        
-        sshagent(['ansible']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251'
-            sh 'scp /var/lib/jenkins/workspace/jenkins-pipeline/* ubuntu@43.204.144.251:/home/ubuntu/'
-        }
-        
-    }
-   
-    
-    stage ('Build the Docker Image in the ansible server'){
-        
-        
-        sshagent(['ansible']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.6.81 cd /home/ubuntu/'
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.6.81 docker image build -t $JOB_NAME:v1.$BUILD_ID .'
-        }
-        
-    }
-    
-    
-    stage ('Tag the docker image'){
- 
-        sshagent(['ansible']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251'      
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251 docker image tag $JOB_NAME:v1.$BUILD_ID mynameismohan/$JOB_NAME:v1.$BUILD_ID'
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251 docker image tag $JOB_NAME:v1.$BUILD_ID mynameismohan/$JOB_NAME:latest'
-        }
-    }
-    
 
-
-    stage ('Push docker image to docker hub'){
+    stage('Send Files to Ansible VM') {
         sshagent(['ansible']) {
-            withCredentials([string(credentialsId: 'dp', variable: 'dp')]) {
-                                sh ('docker login -u mynameismohan -p ${dp}') 
-                                sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251 docker image push mynameismohan/$JOB_NAME:v1.$BUILD_ID '
-                                sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251 docker image push mynameismohan/$JOB_NAME:latest '
-                }
+            sh 'scp -o StrictHostKeyChecking=no * puranmishra2024@34.72.208.46:/home/puranmishra2024/'
         }
     }
-    
-    
-    stage ('Copy files from ansible to Webapp-server(kubernetes server)'){
-        sshagent(['k8s_servers']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.205.210.104 cd /home/ubuntu/'
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.205.210.104 rm Deployment.yaml'
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.205.210.104 rm Service.yaml'
-            sh 'scp /var/lib/jenkins/workspace/jenkins-pipeline/* ubuntu@43.205.210.104:/home/ubuntu'
-        }
-    }    
-    
-     stage ('kubernetes Deployment using ansible'){
+
+    stage('Build Docker Image on Ansible VM') {
         sshagent(['ansible']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251 cd /home/ubuntu/'
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@43.204.144.251 ansible-playbook ansible.yaml'
+            sh '''
+                ssh -o StrictHostKeyChecking=no puranmishra2024@34.72.208.46 '
+                    cd /home/puranmishra2024 &&
+                    docker build -t $JOB_NAME:v1.$BUILD_ID .
+                '
+            '''
         }
     }
-    
 
+    stage('Tag Docker Image') {
+        sshagent(['ansible']) {
+            sh '''
+                ssh -o StrictHostKeyChecking=no puranmishra@2024@34.72.208.46 '
+                    docker tag $JOB_NAME:v1.$BUILD_ID puranmishra/$JOB_NAME:v1.$BUILD_ID &&
+                    docker tag $JOB_NAME:v1.$BUILD_ID puranmishra/$JOB_NAME:latest
+                '
+            '''
+        }
+    }
+
+    stage('Push Image to Docker Hub') {
+        sshagent(['ansible']) {
+            withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no puranmishra2024@34.72.208.46 '
+                        echo "$DOCKER_PASS" | docker login -u puranmishra --password-stdin &&
+                        docker push puranmishra/$JOB_NAME:v1.$BUILD_ID &&
+                        docker push puranmishra/$JOB_NAME:latest
+                    '
+                '''
+            }
+        }
+    }
+
+    stage('Copy K8s Files to GKE Node (optional)') {
+        // Only needed if you manually apply k8s manifests via ssh
+        sshagent(['ansible']) {
+            sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/$JOB_NAME/*.yaml puranmishra2024@10.128.0.5:/home/puranmishra2024/'
+        }
+    }
+
+    stage('Deploy to GKE using Ansible') {
+        sshagent(['ansible']) {
+            sh '''
+                ssh -o StrictHostKeyChecking=no puranmishra2024@34.72.208.46 '
+                    gcloud container clusters get-credentials devops-gke-cluster --zone us-central1-a --project tribal-isotope-457208-q4 &&
+                    kubectl set image deployment/myapp-deployment myapp-container=yourdockerhubusername/$JOB_NAME:latest &&
+                    kubectl apply -f /home/ubuntu/k8s/deployment.yaml &&
+                    kubectl apply -f /home/ubuntu/k8s/service.yaml
+                '
+            '''
+        }
+    }
 }
