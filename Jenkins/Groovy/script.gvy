@@ -5,10 +5,17 @@ node {
     }
 
     stage('Send Files to Ansible VM') {
-        sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
-            sh 'scp -o StrictHostKeyChecking=no * puranmishra2024@34.72.208.46:/home/puranmishra2024/'
-        }
+    sshagent(['ansible']) {
+        sh '''
+        scp -o StrictHostKeyChecking=no \
+            "Kubernetes/Deployment.yaml" \
+            "Kubernetes/Service.yaml" \
+            "Transfer & Execute files on remote server using SshAgent/Dockerfile/Dockerfile" \
+            puranmishra2024@34.72.208.46:/home/puranmishra2024/
+        '''
     }
+}
+
 
     stage('Build Docker Image on Ansible VM') {
         sshagent(['89be48e1-a2bc-4d8d-bd9a-2e66fb315fc6']) {
