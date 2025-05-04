@@ -10,7 +10,7 @@ stage('Send Files to Ansible VM') {
             scp -o StrictHostKeyChecking=no \
                 "Kubernetes/Deployment.yaml" \
                 "Kubernetes/Service.yaml" \
-                "Transfer & Execute files on remote server using SshAgent/Dockerfile/Dockerfile" \
+                "Kubernetes/Dockerfile" \
                 puranmishra2024@34.72.208.46:/home/puranmishra2024/
         '''
     }
